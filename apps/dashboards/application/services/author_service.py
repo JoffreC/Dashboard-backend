@@ -7,16 +7,8 @@ from apps.dashboards.domain.repositories.author_repository import AuthorReposito
 
 
 class AuthorService(AuthorRepository):
-    def get_articles_years_information(self, scopus_id) -> List[YearContribution]:
-        author = Author.objects.get(scopus_id=scopus_id)
-        years = author.years
-        return years
 
-    def get_topics_information(self, scopus_id) -> List[Topic]:
+    def get_by_id(self, scopus_id):
         author = Author.objects.get(scopus_id=scopus_id)
-        topics = author.topics
-        return topics
+        return author
 
-    def get_total_articles(self, scopus_id):
-        author = Author.objects.get(scopus_id=scopus_id)
-        num_articles = author.total_articles

@@ -1,12 +1,10 @@
-from mongoengine import Document, fields, EmbeddedDocument
+from mongoengine import Document, fields
 
 from apps.dashboards.domain.entities.topic import Topic
 from apps.dashboards.domain.entities.year_contribution import YearContribution
 
 
-class Province(Document):
-    id_province = fields.IntField()
-    name = fields.StringField()
+class Country(Document):
     years = fields.EmbeddedDocumentListField(YearContribution)
     topics = fields.EmbeddedDocumentListField(Topic)
     num_articles = fields.IntField()
