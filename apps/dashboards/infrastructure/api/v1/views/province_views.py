@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -30,3 +31,16 @@ class ProvinceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(provinces, many=True)
         data = serializer.data
         return Response({'Provinces': data})
+
+    @action(detail=False, methods=['get'])
+    def get_province_info(self, request):
+        all_province_use_case = AllProvinceUseCase(province_service=self.province_service)
+        provinces = all_province_use_case.execute()
+        serializer = self.get_serializer(provinces, many=True)
+        data = serializer.data
+        response = [{
+            'province': province.name,
+            'value': province.num_articles
+        } for province in data]
+
+        return Response(response)

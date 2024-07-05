@@ -12,12 +12,12 @@ class UpdateView(APIView):
     update_service = UpdateService()
 
     def post(self, request):
-        update_author_use_case = UpdateAuthorUseCase(update_service=self.update_service)
-        update_author_use_case.execute()
-        update_affiliation_use_case = UpdateAffiliationUseCase(update_service=self.update_service)
-        update_affiliation_use_case.execute()
-        update_province_use_case = UpdateProvinceUseCase(update_service=self.update_service)
-        update_province_use_case.execute()
+        # update_author_use_case = UpdateAuthorUseCase(update_service=self.update_service)
+        # update_author_use_case.execute()
+        # update_affiliation_use_case = UpdateAffiliationUseCase(update_service=self.update_service)
+        # update_affiliation_use_case.execute()
+        # update_province_use_case = UpdateProvinceUseCase(update_service=self.update_service)
+        # update_province_use_case.execute()
         update_country = UpdateCountryUseCase(update_service=self.update_service)
         update_country.execute()
         return Response({'message': 'mongodb updated'})

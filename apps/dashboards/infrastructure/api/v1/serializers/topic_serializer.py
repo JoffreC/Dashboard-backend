@@ -8,6 +8,6 @@ from apps.dashboards.infrastructure.api.v1.serializers.year_contribution_seriali
 class TopicSerializer(DocumentSerializer):
     class Meta:
         model = Topic
-        fields = ['topic_name', 'num_articles_per_year']
+        fields = ['topic_name', 'num_articles_per_year','total_topic_articles']
     # topic_name = serializers.CharField()
     # num_articles_per_year = YearContributionSerializer(many=True)

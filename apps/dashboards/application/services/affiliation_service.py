@@ -1,3 +1,5 @@
+from neomodel import db
+
 from apps.dashboards.domain.entities.affiliation import Affiliation
 from apps.dashboards.domain.repositories.affiliation_repository import AffiliationRepository
 

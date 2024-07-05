@@ -1,7 +1,8 @@
 import json
-from collections import defaultdict
+from collections import defaultdict, Counter
 from typing import List
 
+from apps.dashboards.domain.entities.affiliation import Affiliation
 from apps.dashboards.domain.entities.author import Author
 
 with open('apps/dashboards/utils/archive/provincias.json', 'r', encoding='utf-8') as json_file:
@@ -249,3 +250,221 @@ def count_articles_per_year_country(articles_id, years, topics):
     }]
 
     return processed_data
+
+
+def get_last_years(countries):
+    per_year = defaultdict(int)
+    acumulated = defaultdict(int)
+
+    start_year = 1990
+    end_year = 2024
+
+    for country in countries:
+        for year_contrib in country.years:
+            if start_year <= year_contrib.year <= end_year:
+                per_year[year_contrib.year] += year_contrib.num_articles
+
+    sorted_years = list(range(start_year, end_year + 1))
+    acumulated_count = 0
+
+    for year in sorted_years:
+        acumulated_count += per_year[year]
+        acumulated[year] = acumulated_count
+
+    per_year_list = [{"name": str(year), "value": per_year[year]} for year in sorted_years]
+    acumulated_list = [{"name": str(year), "value": acumulated[year]} for year in sorted_years]
+
+    response_data = {
+        "per_year": per_year_list,
+        "acumulative": acumulated_list
+    }
+    return response_data
+
+
+def get_top_topics(countries):
+    topic_counter = Counter()
+    topic_data = defaultdict(lambda: defaultdict(int))
+
+    for country in countries:
+        for topic in country.topics:
+            if topic.topic_name.strip() == "":
+                continue
+            topic_counter[topic.topic_name] += topic.total_topic_articles
+            for year_contrib in topic.num_articles_per_year:
+                topic_data[topic.topic_name][year_contrib.year] += year_contrib.num_articles
+
+    top_20_topics = topic_counter.most_common(20)
+    response_data = {}
+
+    for topic_name, _ in top_20_topics:
+        per_year = []
+        acumulated = []
+        acumulated_count = 0
+        sorted_years = sorted(topic_data[topic_name].keys())
+
+        for year in sorted_years:
+            num_articles = topic_data[topic_name][year]
+            per_year.append({"name": str(year), "value": num_articles})
+            acumulated_count += num_articles
+            acumulated.append({"name": str(year), "value": acumulated_count})
+
+        response_data[topic_name] = {
+            "Per_year": per_year,
+            "Acumulative": acumulated
+        }
+    return response_data
+
+
+def get_top_affiliations():
+    affiliations = Affiliation.objects.order_by('-total_articles')[:20]
+    response_data = {}
+
+    for affiliation in affiliations:
+        per_year = defaultdict(int)
+        acumulated = defaultdict(int)
+        acumulated_count = 0
+
+        for year_contrib in affiliation.years:
+            per_year[year_contrib.year] += year_contrib.num_articles
+
+        sorted_years = sorted(per_year.keys())
+
+        for year in sorted_years:
+            acumulated_count += per_year[year]
+            acumulated[year] = acumulated_count
+
+        per_year_list = [{"name": str(year), "value": per_year[year]} for year in sorted_years]
+        acumulated_list = [{"name": str(year), "value": acumulated[year]} for year in sorted_years]
+
+        response_data[affiliation.name] = {
+            "Per_year": per_year_list,
+            "Acumulative": acumulated_list
+        }
+
+    return response_data
+
+
+def get_authors_info():
+    authors_per_year = defaultdict(set)
+
+    authors = Author.objects.all()
+
+    for author in authors:
+        for year_contrib in author.years:
+            year = year_contrib.year
+            authors_per_year[year].add(author.scopus_id)
+
+    sorted_years = sorted(authors_per_year.keys())
+
+    acumulated_authors = set()
+    per_year_list = []
+    acumulated_list = []
+
+    for year in sorted_years:
+        new_authors = authors_per_year[year] - acumulated_authors
+        num_new_authors = len(new_authors)
+        per_year_list.append({"name": str(year), "value": num_new_authors})
+        acumulated_authors.update(new_authors)
+        acumulated_list.append({"name": str(year), "value": len(acumulated_authors)})
+
+    # Invertir las listas para el orden descendente de los años
+    per_year_list.reverse()
+    acumulated_list.reverse()
+
+    response_data = {
+        "Per_year": per_year_list,
+        "Acumulative": acumulated_list
+    }
+    return response_data
+
+
+def get_affiliations_info():
+    per_year = defaultdict(int)
+    acumulated = defaultdict(int)
+    affiliations_per_year = defaultdict(set)
+
+    affiliations = Affiliation.objects.all()
+
+    for affiliation in affiliations:
+        for year_contrib in affiliation.years:
+            year = year_contrib.year
+            affiliations_per_year[year].add(affiliation.id_affiliation)
+
+    sorted_years = sorted(affiliations_per_year.keys())
+
+    acumulated_affiliations = set()
+    per_year_list = []
+    acumulated_list = []
+
+    for year in sorted_years:
+        new_affiliations = affiliations_per_year[year] - acumulated_affiliations
+        num_new_affiliations = len(new_affiliations)
+        per_year_list.append({"name": str(year), "value": num_new_affiliations})
+        acumulated_affiliations.update(new_affiliations)
+        acumulated_list.append({"name": str(year), "value": len(acumulated_affiliations)})
+
+    # Invertir las listas para el orden descendente de los años
+    per_year_list.reverse()
+    acumulated_list.reverse()
+
+    response_data = {
+        "Per_year": per_year_list,
+        "Acumulative": acumulated_list
+    }
+
+    return response_data
+
+
+def get_articles_topics_info(countries):
+    articles_per_year = defaultdict(int)
+    articles_acumulative = defaultdict(int)
+    topics_per_year = defaultdict(set)
+
+    for country in countries:
+        for year_contrib in country.years:
+            year = year_contrib.year
+            articles_per_year[year] += year_contrib.num_articles
+
+        for topic in country.topics:
+            for year_contrib in topic.num_articles_per_year:
+                year = year_contrib.year
+                topics_per_year[year].add(topic.topic_name)
+
+    sorted_article_years = sorted(articles_per_year.keys())
+    sorted_topic_years = sorted(topics_per_year.keys())
+
+    articles_acumulated_count = 0
+    for year in sorted_article_years:
+        articles_acumulated_count += articles_per_year[year]
+        articles_acumulative[year] = articles_acumulated_count
+
+    acumulated_topics = set()
+    topics_per_year_list = []
+    topics_acumulative_list = []
+
+    for year in sorted_topic_years:
+        new_topics = topics_per_year[year] - acumulated_topics
+        num_new_topics = len(new_topics)
+        topics_per_year_list.append({"name": str(year), "value": num_new_topics})
+        acumulated_topics.update(new_topics)
+        topics_acumulative_list.append({"name": str(year), "value": len(acumulated_topics)})
+
+    # Invertir las listas para el orden descendente de los años
+    articles_per_year_list = [{"name": str(year), "value": articles_per_year[year]} for year in sorted_article_years]
+    articles_acumulative_list = [{"name": str(year), "value": articles_acumulative[year]} for year in sorted_article_years]
+    articles_per_year_list.reverse()
+    articles_acumulative_list.reverse()
+    topics_per_year_list.reverse()
+    topics_acumulative_list.reverse()
+
+    response_data = {
+        "Articles": {
+            "Per_year": articles_per_year_list,
+            "Acumulative": articles_acumulative_list
+        },
+        "Topics": {
+            "Per_year": topics_per_year_list,
+            "Acumulative": topics_acumulative_list
+        }
+    }
+    return response_data

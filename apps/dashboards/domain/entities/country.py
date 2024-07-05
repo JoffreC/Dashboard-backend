@@ -5,6 +5,10 @@ from apps.dashboards.domain.entities.year_contribution import YearContribution
 
 
 class Country(Document):
+    name = fields.StringField()
     years = fields.EmbeddedDocumentListField(YearContribution)
     topics = fields.EmbeddedDocumentListField(Topic)
-    num_articles = fields.IntField()
+    total_authors = fields.IntField()
+    total_articles = fields.IntField()
+    total_affiliations = fields.IntField()
+    total_topics = fields.IntField()

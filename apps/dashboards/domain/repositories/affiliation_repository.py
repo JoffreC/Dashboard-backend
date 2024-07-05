@@ -10,3 +10,4 @@ class AffiliationRepository(ABC):
     @abstractmethod
     def get_all(self) -> object:
         pass
+

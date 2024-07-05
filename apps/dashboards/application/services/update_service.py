@@ -7,7 +7,8 @@ from apps.dashboards.domain.entities.province import Province
 from apps.dashboards.domain.entities.topic import Topic
 from apps.dashboards.domain.entities.year_contribution import YearContribution
 from apps.dashboards.domain.repositories.update_repository import UpdateRepository
-from apps.dashboards.utils.utils import extract_year, count_articles_per_year, count_articles_per_year_author,process_city, find_province, process_affiliation_name, count_province, count_articles_per_year_country
+from apps.dashboards.utils.utils import extract_year, count_articles_per_year, count_articles_per_year_author, \
+    process_city, find_province, process_affiliation_name, count_province, count_articles_per_year_country
 
 
 class UpdateService(UpdateRepository):
@@ -190,11 +191,56 @@ class UpdateService(UpdateRepository):
                               total_topic_articles=topic_data['totalTopicArticles'])
                 topics_list.append(topic)
 
+            authors = self.get_authors_count()
+            affiliations = self.get_affiliations_count()
+            topics = self.get_topics_count()
+
             # Crear Country object
             country_obj = Country(
+                name="Ecuador",
                 years=years_contributions,
                 topics=topics_list,
-                num_articles=country_data['totalArticles']
+                total_authors=authors,
+                total_articles=country_data['totalArticles'],
+                total_affiliations=affiliations,
+                total_topics=topics,
             )
 
             country_obj.save()
+
+    def get_authors_count(self):
+        query = """
+                                MATCH (au:Author)
+                                RETURN COUNT(DISTINCT au.scopus_id)
+                        """
+        results, meta = db.cypher_query(query)
+        return results[0][0]
+
+    def get_affiliations_count(self):
+        query = """
+                                MATCH (af:Affiliation)
+                                RETURN COUNT(DISTINCT af.scopus_id)
+                        """
+        results, meta = db.cypher_query(query)
+
+        return results[0][0]
+
+    def get_articles_count(self):
+        query = """
+        Match (ar:Article)
+        Return COUNT(DISTINCT ar.scopus_id)
+        """
+
+        results, meta = db.cypher_query(query)
+
+        return results[0][0]
+
+    def get_topics_count(self):
+        query = """
+                Match (t:Topic) 
+                Return COUNT(t.name)
+                """
+
+        results, meta = db.cypher_query(query)
+
+        return results[0][0]

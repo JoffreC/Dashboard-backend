@@ -11,4 +11,4 @@ class CountrySerializer(DocumentSerializer):
 
     class Meta:
         model = Country
-        fields = ['years', 'topics', 'num_articles']
+        fields = ['name', 'years', 'topics', 'total_authors', 'total_articles', 'total_affiliations', 'total_topics']

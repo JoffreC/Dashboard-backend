@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class CountryRepository(ABC):
-
+class ArticleRepository(ABC):
     @abstractmethod
-    def get_country(self):
+    def get_total(self) -> object:
         pass
-
-
-

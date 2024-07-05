@@ -1,5 +1,7 @@
 from typing import List
 
+from neomodel import db
+
 from apps.dashboards.domain.entities.author import Author
 from apps.dashboards.domain.entities.topic import Topic
 from apps.dashboards.domain.entities.year_contribution import YearContribution

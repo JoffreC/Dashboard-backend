@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'apps',
     'apps.search_engine',
     'apps.scopus_integration',
-    'apps.dashboards'
+    'apps.dashboards',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
@@ -60,6 +61,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,6 +69,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+    # otros orígenes permitidos
 ]
 
 ROOT_URLCONF = 'config.urls'
